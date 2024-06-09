@@ -57,11 +57,12 @@ RUN apt-get update && \
     gnupg
 
 # Add the 22.04 repository for the specific package
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" > /etc/apt/sources.list.d/jammy.list && \
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
+#RUN echo "deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" > /etc/apt/sources.list.d/jammy.list && \
+#apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
 
 # Install the specific package from the 22.04 repository
-RUN apt-get update && apt-get install -y --no-install-recommends gcc-11-aarch64-linux-gnu g++-11-aarch64-linux-gnu gfortran-11-aarch64-linux-gnu gcc-doc
+#RUN apt-get update && apt-get install -y --no-install-recommends gcc-11-aarch64-linux-gnu g++-11-aarch64-linux-gnu gfortran-11-aarch64-linux-gnu gcc-doc
+RUN apt-get update && apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gfortran-aarch64-linux-gnu gcc-doc
 
 # Add the NVIDIA CUDA repository GPG key
 ENV GPGKEY="3bf863cc.pub"
@@ -103,13 +104,15 @@ RUN make clean
 #    make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA78AE USE_OPENMP=1
 
 # Build for a closer micro arch
-RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib
+#RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib
+RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib
 
 # Build for a generic ARMV8 target
 #RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=ARMV8 USE_OPENMP=1 RANLIB=ranlib
 
 # Install OpenBLAS under /usr/local
 #RUN make PREFIX=/usr/local install
-RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
+#RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
+RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
 
 WORKDIR /shared/
