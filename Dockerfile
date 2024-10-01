@@ -8,7 +8,7 @@ LABEL build_version="AGX dev env version:- ${VERSION} build-date:- ${BUILD_DATE}
 LABEL maintainer="derrekito"
 
 ENV NVIDIA_VERSION="11.8"
-ENV GCC_VERSION="11"
+ENV GCC_VERSION="9"
 
 # Set the TERM environment variable to linux
 ENV TERM linux
@@ -34,8 +34,8 @@ RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
 RUN apt-get update -y && \
     apt-get install -y \
     build-essential \
-    gcc-11 \
-    g++-11 \
+    gcc-${GCC_VERSION} \
+    g++-${GCC_VERSION} \
     git
 
 # Add the NVIDIA CUDA repository GPG key and repository, and install CUDA toolkit
@@ -56,12 +56,7 @@ RUN apt-get update && \
     software-properties-common \
     gnupg
 
-# Add the 22.04 repository for the specific package
-#RUN echo "deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" > /etc/apt/sources.list.d/jammy.list && \
-#apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-
-# Install the specific package from the 22.04 repository
-#RUN apt-get update && apt-get install -y --no-install-recommends gcc-11-aarch64-linux-gnu g++-11-aarch64-linux-gnu gfortran-11-aarch64-linux-gnu gcc-doc
+# Update the system and install necessary tools
 RUN apt-get update && apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gfortran-aarch64-linux-gnu gcc-doc
 
 # Add the NVIDIA CUDA repository GPG key
@@ -114,5 +109,23 @@ RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGE
 #RUN make PREFIX=/usr/local install
 #RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
 RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
+
+# copy jsoncpp repo to tmp
+COPY jsoncpp /tmp/jsoncpp
+
+# USER root
+RUN chown -R ${USER}:${USER} /tmp/jsoncpp
+WORKDIR /tmp/jsoncpp
+
+# install cmake
+RUN apt-get update -y && apt-get install -y cmake
+
+#update and upgrade
+RUN apt-get update -y && apt-get upgrade -y
+
+#build and install jsonncpp
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release
+RUN cmake --build build
+RUN cd build && make install
 
 WORKDIR /shared/
