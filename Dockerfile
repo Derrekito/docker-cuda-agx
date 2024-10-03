@@ -120,12 +120,20 @@ WORKDIR /tmp/jsoncpp
 # install cmake
 RUN apt-get update -y && apt-get install -y cmake
 
+#build and install jsonncpp
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-9 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-9 
+RUN cd build
+RUN cmake ..
+RUN ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1
+RUN export LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib
+RUN make && make install
+#RUN make install
+
 #update and upgrade
 RUN apt-get update -y && apt-get upgrade -y
 
-#build and install jsonncpp
-RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++9 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-9 -DCMAKE_INSTALL_PREFIX=/usr/local
-RUN cmake --build build
-RUN cd build && make install
-
 WORKDIR /shared/
+
+
+#ln -s /lib/ld-linux-aarch64.so.1 /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1
+#export LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib

@@ -99,6 +99,17 @@ Change directories into the cloned repository:
 ```bash
 cd liblog/
 ```
+
+Run `make orin=1` if you are compiling for a NVIDIA Jetson Orin NX or AGX:
+```bash
+make orin=1
+```
+
+Otherwise, run:
+```bash
+make
+```
+
 Run `make install` to install liblog:
 - You may be required to run this with `sudo`.
 
