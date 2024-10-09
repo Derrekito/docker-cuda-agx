@@ -17,6 +17,7 @@ dl "${BASE_URL}/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin"
 dl "${BASE_URL}/repos/ubuntu2004/cross-linux-aarch64/${GPGKEY} -O ${GPGKEY}"
 
 git clone https://github.com/xianyi/OpenBLAS.git
+git clone https://github.com/open-source-parsers/jsoncpp.git
 
 docker build --tag "$TAG" --build-arg APT_CACHE_VOLUME=apt-cache .
 
