@@ -122,12 +122,17 @@ RUN apt-get update -y && apt-get install -y cmake
 
 #build and install jsonncpp
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-9 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-9 
-RUN cd build
-RUN cmake ..
+
+# create symbolic links to the cross-compiler libraries because the jsoncpp build script is not able to find them
 RUN ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1
+RUN ln -s /usr/aarch64-linux-gnu/lib/libstdc++.so.6 /lib/libstdc++.so.6
+RUN ln -s /usr/aarch64-linux-gnu/lib/libgcc_s.so.1 /lib/libgcc_s.so.1
+RUN ln -s /usr/aarch64-linux-gnu/lib/libc.so.6 /lib/libc.so.6
+RUN ln -s /usr/aarch64-linux-gnu/lib/libm.so.6 /lib/libm.so.6
 RUN export LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib
-RUN make && make install
-#RUN make install
+
+# make and install jsoncpp
+RUN cd build && make && make install
 
 #update and upgrade
 RUN apt-get update -y && apt-get upgrade -y
