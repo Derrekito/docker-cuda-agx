@@ -38,7 +38,9 @@ RUN apt-get update -y && \
     g++-${GCC_VERSION} \
     git
 
-# Add the NVIDIA CUDA repository GPG key and repository, and install CUDA toolkit
+
+# --------Add the NVIDIA CUDA repository GPG key and repository, and install CUDA toolkit--------
+
 COPY cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb /tmp/
 COPY cuda-ubuntu2004.pin /tmp/
 
@@ -85,10 +87,15 @@ ENV OPENBLAS_NUM_THREADS=$MAX_NUM_THREADS
 ENV GOTO_NUM_THREADS=$MAX_NUM_THREADS
 ENV OMP_NUM_THREADS=$MAX_NUM_THREADS
 
+
+#--------Installing OpenBLAS--------
+
 # copy OpenBLAS repo to tmp
 COPY OpenBLAS /tmp/OpenBLAS
+
 #USER root
 RUN chown -R ${USER}:${USER} /tmp/OpenBLAS
+
 WORKDIR /tmp/OpenBLAS
 
 # clean up the build environment as a precaution
@@ -110,31 +117,33 @@ RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGE
 #RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
 RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
 
+
+#--------Building and installing jsoncpp--------
+
 # copy jsoncpp repo to tmp
 COPY jsoncpp /tmp/jsoncpp
 
-# USER root
-RUN chown -R ${USER}:${USER} /tmp/jsoncpp
 WORKDIR /tmp/jsoncpp
 
-# install cmake
+# Install cmake
 RUN apt-get update -y && apt-get install -y cmake
 
-#build and install jsonncpp
+# Build and install jsonncpp
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-9 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-9 
 
-# create symbolic links to the cross-compiler libraries because the jsoncpp build script is not able to find them
+# Create symbolic links to the cross-compiler libraries because the jsoncpp build script is not able to find them
 RUN ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1
 RUN ln -s /usr/aarch64-linux-gnu/lib/libstdc++.so.6 /lib/libstdc++.so.6
 RUN ln -s /usr/aarch64-linux-gnu/lib/libgcc_s.so.1 /lib/libgcc_s.so.1
 RUN ln -s /usr/aarch64-linux-gnu/lib/libc.so.6 /lib/libc.so.6
 RUN ln -s /usr/aarch64-linux-gnu/lib/libm.so.6 /lib/libm.so.6
-RUN export LD_LIBRARY_PATH=/usr/aarch64-linux-gnu/lib
+RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/aarch64-linux-gnu/lib
 
-# make and install jsoncpp
+# Make and install jsoncpp
 RUN cd build && make && make install
 
-#update and upgrade
+# Update and upgrade
 RUN apt-get update -y && apt-get upgrade -y
 
-WORKDIR /shared/
+# Changed the working directory to /shared so when dropped into the shell, the user is in the shared directory
+WORKDIR /shared

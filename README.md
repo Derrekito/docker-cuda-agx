@@ -1,12 +1,13 @@
-# Docker-CUDA-AGX
-Docker development environment for the NVIDIA Jetson AGX
-- Compatible for development for the NVIDIA Jetson Orin NX
+# Docker-CUDA-Orin-Series
+Docker development environment for the NVIDIA Jetson Orin Series (Nano, NX, and AGX).
 
-Jsoncpp is included in the installation. Please refer to the following instructions for installing the Docker Engine and setting up the Docker CUDA AGX. 
+This Docker development environment is designed for the NVIDIA Jetson Orin Series (Nano, NX, and AGX). It is purposed for developmental purposes, supporting a variety of projects for these devices, and providing custom-compiled support libraries such as JsonCpp and OpenBLAS. The environment utilizes CUDA version 11.8. 
+
+JsonCpp and OpenBLAS are cloned and included in this Docker development environment by running `build_image.sh`. The following sections explain how to install [Installing Docker Engine on Ubuntu](#installing-docker-engine-on-ubuntu) and [Linux post-installation steps for Docker Engine](#linux-post-installion-steps-for-docker-engine) for the Docker Engine and setup [Docker Cuda Setup](#docker-cuda-setup) for the Docker CUDA Orin Series. 
 
 ## Installing Docker Engine on Ubuntu
 
-For more information, visit the [dockerdocs](https://docs.docker.com/engine/install/ubuntu/).
+The following instructions are abstracted and summarized, please visit [dockerdocs](https://docs.docker.com/engine/install/ubuntu/) for more information.
 
 Install using the **apt** repository: 
 
@@ -39,7 +40,7 @@ sudo docker run hello-world
 
 ### Linux post-installion steps for Docker Engine
 
-For more information, visit the [dockerdocs-post-installation](https://docs.docker.com/engine/install/linux-postinstall/).
+The following instructions are abstracted and summarized, please visit [dockerdocs-post-installation](https://docs.docker.com/engine/install/linux-postinstall/) for more information.
 
 Create the docker group and add your user: 
 
@@ -61,7 +62,7 @@ Create the docker group and add your user:
     docker run hello-world
     ```
 
-## Docker Cuda AGX
+## Docker CUDA Setup
 
 Clone the master branch.
 
@@ -69,20 +70,20 @@ Clone the master branch.
 git clone git@github.com:Derrekito/docker-cuda-agx.git
 cd docker-cuda-agx
 ``` 
-Run the `build_image`:
-
+Run the `build_image` to build the image:
+- `build_image` downloads necessary files, clones the OpenBLAS and JsonCpp repositories, and builds the Docker image with the tag "cudatools:11.8".
 ```bash
 ./build_image.sh
 ```
 
 Run the `create_container` and give a `path/to/projects` directory of your preference: 
-
+- `create_container` creates a Docker container from the built image and mounts the specified directory to the container.
 ```bash
 ./create_container.sh
 ```
 
-Run `run_container.sh` to run your environment: 
-
+Run `run_container.sh` to run your environment:
+- `run_container.sh` starts the Docker container, providing an isolated environment with all the necessary tools and libraries pre-installed.
 ```bash
 ./run_container.sh
 ```

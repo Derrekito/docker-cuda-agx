@@ -6,6 +6,7 @@ KEYRING="cuda-keyring_1.0-1_all.deb"
 CUDA_REPO_INSTALLER="cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb"
 GPGKEY="3bf863cc.pub"
 BASE_URL="https://developer.download.nvidia.com/compute/cuda"
+
 function dl()
 {
     wget -nc $1
