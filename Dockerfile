@@ -8,7 +8,7 @@ LABEL build_version="AGX dev env version:- ${VERSION} build-date:- ${BUILD_DATE}
 LABEL maintainer="derrekito"
 
 ENV NVIDIA_VERSION="11.8"
-ENV GCC_VERSION="11"
+ENV GCC_VERSION="9"
 
 # Set the TERM environment variable to linux
 ENV TERM linux
@@ -34,11 +34,13 @@ RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
 RUN apt-get update -y && \
     apt-get install -y \
     build-essential \
-    gcc-11 \
-    g++-11 \
+    gcc-${GCC_VERSION} \
+    g++-${GCC_VERSION} \
     git
 
-# Add the NVIDIA CUDA repository GPG key and repository, and install CUDA toolkit
+
+# --------Add the NVIDIA CUDA repository GPG key and repository, and install CUDA toolkit--------
+
 COPY cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb /tmp/
 COPY cuda-ubuntu2004.pin /tmp/
 
@@ -56,12 +58,7 @@ RUN apt-get update && \
     software-properties-common \
     gnupg
 
-# Add the 22.04 repository for the specific package
-#RUN echo "deb http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" > /etc/apt/sources.list.d/jammy.list && \
-#apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1E9377A2BA9EF27F
-
-# Install the specific package from the 22.04 repository
-#RUN apt-get update && apt-get install -y --no-install-recommends gcc-11-aarch64-linux-gnu g++-11-aarch64-linux-gnu gfortran-11-aarch64-linux-gnu gcc-doc
+# Update the system and install necessary tools
 RUN apt-get update && apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gfortran-aarch64-linux-gnu gcc-doc
 
 # Add the NVIDIA CUDA repository GPG key
@@ -90,10 +87,15 @@ ENV OPENBLAS_NUM_THREADS=$MAX_NUM_THREADS
 ENV GOTO_NUM_THREADS=$MAX_NUM_THREADS
 ENV OMP_NUM_THREADS=$MAX_NUM_THREADS
 
+
+#--------Installing OpenBLAS--------
+
 # copy OpenBLAS repo to tmp
 COPY OpenBLAS /tmp/OpenBLAS
+
 #USER root
 RUN chown -R ${USER}:${USER} /tmp/OpenBLAS
+
 WORKDIR /tmp/OpenBLAS
 
 # clean up the build environment as a precaution
@@ -115,4 +117,33 @@ RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGE
 #RUN make CC=aarch64-linux-gnu-gcc-11 FC=aarch64-linux-gnu-gfortran-11 HOSTCC=gcc-11 TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
 RUN make CC=aarch64-linux-gnu-gcc FC=aarch64-linux-gnu-gfortran HOSTCC=gcc TARGET=CORTEXA73 USE_OPENMP=1 RANLIB=ranlib PREFIX=/usr/local install
 
-WORKDIR /shared/
+
+#--------Building and installing jsoncpp--------
+
+# copy jsoncpp repo to tmp
+COPY jsoncpp /tmp/jsoncpp
+
+WORKDIR /tmp/jsoncpp
+
+# Install cmake
+RUN apt-get update -y && apt-get install -y cmake
+
+# Build and install jsonncpp
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-9 -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-9 
+
+# Create symbolic links to the cross-compiler libraries because the jsoncpp build script is not able to find them
+RUN ln -s /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1
+RUN ln -s /usr/aarch64-linux-gnu/lib/libstdc++.so.6 /lib/libstdc++.so.6
+RUN ln -s /usr/aarch64-linux-gnu/lib/libgcc_s.so.1 /lib/libgcc_s.so.1
+RUN ln -s /usr/aarch64-linux-gnu/lib/libc.so.6 /lib/libc.so.6
+RUN ln -s /usr/aarch64-linux-gnu/lib/libm.so.6 /lib/libm.so.6
+RUN export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/aarch64-linux-gnu/lib
+
+# Make and install jsoncpp
+RUN cd build && make && make install
+
+# Update and upgrade
+RUN apt-get update -y && apt-get upgrade -y
+
+# Changed the working directory to /shared so when dropped into the shell, the user is in the shared directory
+WORKDIR /shared
